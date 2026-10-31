@@ -1,0 +1,69 @@
+================================================================================
+           WHY PETEY'S ADDON IS SAFE — SECURITY & AUDIT BREAKDOWN
+================================================================================
+
+Target: Petey Addon (v0.10.8)
+Scope: Complete decompiled source code (182 Java classes, 491 total files)
+
+1. QUICK SUMMARY (TL;DR)
+- Is it a RAT (Remote Access Trojan)?       --> NO
+- Does it steal Discord tokens or passwords? --> NO
+- Does it log IP addresses?                  --> NO
+- Is your Minecraft token stolen?           --> NO
+
+VERDICT: SAFE. The mod is completely clean. 
+All detections on mod-checkers and antivirus bots are automated FALSE POSITIVES.
+
+2. WHY DO SCANNERS FLAG IT? (THE 3 FALSE POSITIVES)
+
+A. THE "DANGEROUS" FLAG: method_1674 (Session Verification)
+   Location: com/petey/addon/gamble/GambleClient.java (Line 271)
+   
+   Why it's flagged:
+     Scanners see "method_1674", which is Minecraft's Session.getAccessToken() 
+     in Fabric mappings. Automated bots flag any mod touching this method as a 
+     "Token Stealer".
+     
+   What the code ACTUALLY does:
+     mc.method_73361().comp_837().joinServer(user.method_44717(), user.method_1674(), challenge);
+     
+     The mod sends your token DIRECTLY to official Mojang authentication servers 
+     (sessionserver.mojang.com) using Minecraft's standard online-mode handshake.
+     - Your token is NEVER sent to banditmarket, Discord, or any third party.
+     - Only the public challenge response is verified by Mojang to confirm account 
+       ownership for the in-game mini-game.
+
+B. THE "DOWNLOADER" FLAG: ProcessBuilder (Video Player)
+   Location: com/petey/addon/stream/StreamTools.java
+   
+   Why it's flagged:
+     Antivirus heuristics flag Java applications that download .exe files and 
+     spawn processes as "Trojan.Downloader" or "Riskware".
+     
+   What the code ACTUALLY does:
+     The mod features an in-game video and music player. It downloads official, 
+     open-source media utilities (yt-dlp and ffmpeg) directly from their official 
+     GitHub releases (github.com/yt-dlp) to decode and render video streams in-game.
+
+C. THE "SURVEILLANCE AUDIO" FLAG: SourceDataLine
+   Location: com/petey/addon/stream/StreamPlayback.java
+   
+   Why it's flagged:
+     The scanner labels calls to Java's SourceDataLine as "surveillance.audio".
+     
+   What the code ACTUALLY does:
+     SourceDataLine is standard Java Sound to output audio to your desktop speakers! 
+     The scanner literally flags playing music through your headphones as surveillance.
+
+3. WHAT IS COMPLETELY ABSENT (ZERO EVIDENCE)
+- Discord Webhooks:       0 found (no Discord exfiltration endpoints)
+- Discord Token Scrapers: 0 found (no %APPDATA%\discord\leveldb reads)
+- Browser Credential:     0 found (no Chrome / Edge / Brave password access)
+- IP Grabbers:            0 found (no calls to ipify, icanhazip, checkip)
+- Dynamic Code Injection: 0 found (no URLClassLoader, defineClass, or Unsafe)
+- Remote Backdoors:       0 found (no unauthorized listening sockets)
+
+4. CONCLUSION
+Every single flagged item in mod checkers comes from normal mod features:
+Mojang account verification, YouTube video streaming, and speaker playback.
+The mod is safe to run and contains no malicious backdoors.
